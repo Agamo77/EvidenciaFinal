@@ -5,15 +5,15 @@ public class Citas {
     private String id;
     private LocalDateTime fecha;
     private String motivoConsulta;
-    private Doctores doctor;
-    private Pacientes paciente;
+    private String nombreDoctor;
+    private String nombrePaciente;
 
-    public Citas(String id, LocalDateTime fecha, String motivoConsulta, Doctores doctor, Pacientes paciente) {
+    public Citas(String id, LocalDateTime fecha, String motivoConsulta, String nombreDoctor, String nombrePaciente) {
         this.id = id;
         this.fecha = fecha;
         this.motivoConsulta = motivoConsulta;
-        this.doctor = doctor;
-        this.paciente = paciente;
+        this.nombreDoctor = nombreDoctor;
+        this.nombrePaciente = nombrePaciente;
     }
 
     public String obtenerId() {
@@ -28,17 +28,17 @@ public class Citas {
         return motivoConsulta;
     }
 
-    public Doctores obtenerDoctor() {
-        return doctor;
+    public String obtenerNombreDoctor() {
+        return nombreDoctor;
     }
 
-    public Pacientes obtenerPaciente() {
-        return paciente;
+    public String obtenerNombrePaciente() {
+        return nombrePaciente;
     }
 
     @Override
     public String toString() {
-        return id + "," + fecha + "," + motivoConsulta + "," + doctor.obtenerNombre() + "," + paciente.obtenerNombre();
+        return id + "," + fecha + "," + motivoConsulta + "," + nombreDoctor + "," + nombrePaciente;
     }
 
 }
