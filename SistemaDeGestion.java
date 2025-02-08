@@ -1,10 +1,6 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class SistemaDeGestion {
     // Lista creada para almacenar los doctores
@@ -17,30 +13,26 @@ public class SistemaDeGestion {
         cargarDoctores();
     }
 
-    // Creamos un método para agregar doctores a la lista
+    // Agregar un nuevo doctor
     public void agregarDoctor(String nombre, String especialidad) {
-        // Generar un ID único para el doctor
-        String id = generarIdUnico();
+        String id = generarIdUnicoDoctores();
         Doctores nuevoDoctor = new Doctores(id, nombre, especialidad);
-
         doctores.add(nuevoDoctor);
         guardarDoctores(nuevoDoctor);
-        System.out.println("Nuevo Doctor: " + nuevoDoctor.obtenerNombre());
     }
 
-    //Este metodo genera un ID para el doctor que se vaya a agregar
-    private String generarIdUnico() {
-        // Lógica para generar un ID único
-        return String.format("%04d", doctores.size() + 1);  // Ejemplo: "0001", "0002", ...
+    // Generar un ID único para doctores
+    private String generarIdUnicoDoctores() {
+        return String.format("%04d", doctores.size() + 1);
     }
 
-    // Este metodo agrega la informacion del doctor al CSV
+    // Guardar doctor en archivo CSV
     private void guardarDoctores(Doctores doctor) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoDoctores, true))) {
-            writer.write(doctor.obtenerId() + "," + doctor.obtenerNombre() + "," + doctor.obtenerEspecialidad());
+            writer.write(doctor.toString());
             writer.newLine();
         } catch (IOException e) {
-            System.out.println("Ocurrió un error al escribir en base de datos: " + e.getMessage());
+            System.out.println("Ocurrió un error al guardar el doctor: " + e.getMessage());
         }
     }
 
@@ -50,29 +42,26 @@ public class SistemaDeGestion {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = linea.split(",");
-                if (datos.length == 3) {  
-                    String id = datos[0];  
-                    String nombre = datos[1];
-                    String especialidad = datos[2];
-
-                    // Crear un nuevo doctor y agregarlo a la lista
-                    Doctores doctor = new Doctores(id, nombre, especialidad);
-                    doctores.add(doctor);
+                if (datos.length == 5) {
+                    Citas cita = new Citas(datos[0], LocalDateTime.parse(datos[1]), datos[2], datos[3], datos[4]);
+                    citas.add(cita);
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error al cargar doctores desde el archivo: " + e.getMessage());
+            System.out.println("Error al cargar citas: " + e.getMessage());
         }
     }
 
-    // Metodo para mostrar todos los doctores
-    public void mostrarDoctores() {
-        if (doctores.isEmpty()) {
-            System.out.println("No se encontraron doctores en base de datos.");
+    // Mostrar citas registradas
+    public void mostrarCitas() {
+        if (citas.isEmpty()) {
+            System.out.println("No hay citas registradas.");
         } else {
-            System.out.println("Doctores actualmente en base de datos:");
-            for (Doctores doctor : doctores) {
-                System.out.println(doctor.obtenerNombre() + ": " + doctor.obtenerEspecialidad());
+            System.out.println("Citas registradas:");
+            for (Citas cita : citas) {
+                System.out.println("Cita ID: " + cita.obtenerId() + ", Fecha: " + cita.obtenerFecha() +
+                        ", Motivo: " + cita.obtenerMotivoConsulta() + ", Doctor: " + cita.obtenerNombreDoctor() +
+                        ", Paciente: " + cita.obtenerNombrePaciente());
             }
         }
     }
