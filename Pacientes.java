@@ -2,6 +2,7 @@ public class Pacientes {
     private String id;
     private String nombre;
 
+    //Creamos un constructor para pacientes
     public Pacientes(String id, String nombre) {
         this.id  = id;
         this.nombre = nombre;
