@@ -1,14 +1,15 @@
 import java.util.Scanner;
+import java.time.LocalDateTime;
 
 public class Main {
     public static void main(String[] args) {
         
-        // Crear una instancia del sistema de gestión
         SistemaDeGestion sistema = new SistemaDeGestion();
 
         // Crear el escáner para recibir la entrada del usuario
         Scanner scanner = new Scanner(System.in);
 
+        // Inicio del programa
         System.out.println("Bienvenido a Dr. Manager");
 
         boolean continuar = true;
@@ -16,62 +17,59 @@ public class Main {
         while (continuar) {
             //Creamos un menu para que el usuario interactue con el programa
             System.out.println("\nSelecciona una opcion:");
-            System.out.println("1. Agregar nuevo doctor");
-            System.out.println("2. Mostrar doctores registrados");
-            System.out.println("3. Agregar nuevo paciente");
-            System.out.println("4. Mostrar pacientes registrados");
-            System.out.println("5. Salir");
+            System.out.println("1. Agregar Doctor");
+            System.out.println("2. Agregar Paciente");
+            System.out.println("3. Agregar Cita");
+            System.out.println("4. Mostrar Doctores");
+            System.out.println("5. Mostrar Pacientes");
+            System.out.println("6. Mostrar Citas");
+            System.out.println("7. Salir");
 
-            String opcion = scanner.nextLine();
+            
+            int opcion = Integer.parseInt(scanner.nextLine());
 
             switch (opcion) {
-                case "1":
-                    // Agregar un nuevo doctor
-                    System.out.println("Por favor ingresa la información del doctor a agregar");
-
-                    // Solicitar al usuario el nombre y especialidad del doctor
+                case 1:
+                    // Agregar doctor
                     System.out.print("Nombre del doctor: ");
                     String nombreDoctor = scanner.nextLine();
                     System.out.print("Especialidad del doctor: ");
-                    String especialidad = scanner.nextLine();
-
-                    // Agregar el doctor al sistema
-                    sistema.agregarDoctor(nombreDoctor, especialidad);
+                    String especialidadDoctor = scanner.nextLine();
+                    sistema.agregarDoctor(nombreDoctor, especialidadDoctor);
                     break;
-
-                case "2":
-                    // Mostrar los doctores registrados
-                    System.out.println("\nDoctores registrados:");
-                    sistema.mostrarDoctores();
-                    break;
-
-                case "3":
-                    // Agregar un nuevo paciente
-                    System.out.println("Por favor ingresa la información del paciente a agregar");
-
-                    // Solicitar al usuario el nombre del paciente
+                case 2:
+                    // Agregar paciente
                     System.out.print("Nombre del paciente: ");
                     String nombrePaciente = scanner.nextLine();
-
-                    // Agregar el paciente al sistema
                     sistema.agregarPaciente(nombrePaciente);
                     break;
-
-                case "4":
-                    // Mostrar los pacientes registrados
-                    System.out.println("\nPacientes registrados:");
+                case 3:
+                    // Agregar cita
+                    System.out.print("Fecha y hora de la cita (YYYY-MM-DDTHH:MM): ");
+                    String fechaHoraString = scanner.nextLine();
+                    LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraString);
+                    System.out.print("Motivo de la cita: ");
+                    String motivoCita = scanner.nextLine();
+                    System.out.print("Nombre del doctor: ");
+                    String doctor = scanner.nextLine();
+                    System.out.print("Nombre del paciente: ");
+                    String paciente = scanner.nextLine();
+                    sistema.agregarCita(fechaHora, motivoCita, doctor, paciente);
+                    break;
+                case 4:
+                    sistema.mostrarDoctores();
+                    break;
+                case 5:
                     sistema.mostrarPacientes();
                     break;
-
-                case "5":
-                    // Salir del programa
-                    System.out.println("Gracias por usar Dr. Manager. Hasta la proxima!");
+                case 6:
+                    sistema.mostrarCitas();
+                    break;
+                case 7:
                     continuar = false;
                     break;
-
                 default:
-                    // Opción no válida
-                    System.out.println("Opcion no válida. Intenta de nuevo");
+                    System.out.println("Esa opcion es invalida.");
             }
         }
 

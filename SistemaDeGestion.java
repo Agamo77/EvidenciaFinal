@@ -1,87 +1,94 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class SistemaDeGestion {
-    // Listas creadas para almacenar los doctores y pacientes
     private List<Doctores> doctores;
     private List<Pacientes> pacientes;
-    // Asignamos un archivo CSV para guardar la lista de doctores
+    private List<Citas> citas;
     private final String archivoDoctores = "doctores.csv";
     private final String archivoPacientes = "pacientes.csv";
+    private final String archivoCitas = "citas.csv";
 
     public SistemaDeGestion() {
         this.doctores = new ArrayList<>();
-        this.pacientes  = new ArrayList<>();
+        this.pacientes = new ArrayList<>();
+        this.citas = new ArrayList<>();
         cargarDoctores();
         cargarPacientes();
+        cargarCitas();
     }
 
-    // Creamos un método para agregar doctores a la lista
+    // Agregar un nuevo doctor
     public void agregarDoctor(String nombre, String especialidad) {
-        // Generar un ID único para el doctor
-        String id = generarIdUnico();
+        String id = generarIdUnicoDoctores();
         Doctores nuevoDoctor = new Doctores(id, nombre, especialidad);
-
         doctores.add(nuevoDoctor);
         guardarDoctores(nuevoDoctor);
-        System.out.println("Nuevo Doctor: " + nuevoDoctor.obtenerNombre());
     }
 
-    //Este metodo genera un ID para el doctor que se vaya a agregar
-    private String generarIdUnico() {
-        // Lógica para generar un ID único
-        return String.format("%04d", doctores.size() + 1);  // Ejemplo: "0001", "0002", ...
+    // Generar un ID único para doctores
+    private String generarIdUnicoDoctores() {
+        return String.format("%04d", doctores.size() + 1);
     }
 
-    // Este metodo agrega la informacion del doctor al CSV
+    // Guardar doctor en archivo CSV
     private void guardarDoctores(Doctores doctor) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoDoctores, true))) {
-            writer.write(doctor.obtenerId() + "," + doctor.obtenerNombre() + "," + doctor.obtenerEspecialidad());
+            writer.write(doctor.toString());
             writer.newLine();
         } catch (IOException e) {
-            System.out.println("Ocurrió un error al escribir en base de datos: " + e.getMessage());
+            System.out.println("Ocurrió un error al guardar el doctor: " + e.getMessage());
         }
     }
 
-    //Este metodo agrega pacientes a la lista
+    // Cargar doctores desde archivo CSV
+    private void cargarDoctores() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivoDoctores))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos.length == 3) {
+                    Doctores doctor = new Doctores(datos[0], datos[1], datos[2]);
+                    doctores.add(doctor);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cargar doctores: " + e.getMessage());
+        }
+    }
+
+    // Agregar un nuevo paciente
     public void agregarPaciente(String nombre) {
         String id = generarIdUnicoPacientes();
         Pacientes nuevoPaciente = new Pacientes(id, nombre);
         pacientes.add(nuevoPaciente);
         guardarPacientes(nuevoPaciente);
-        System.out.println("Nuevo Paciente: " + nuevoPaciente.obtenerNombre());
     }
 
-    //Este metodo genera un ID para el paciente agregado
+    // Generar un ID único para pacientes
     private String generarIdUnicoPacientes() {
         return String.format("%04d", pacientes.size() + 1);
     }
 
-    //Este metodo guarda los pacientes en el CSV
+    // Guardar paciente en archivo CSV
     private void guardarPacientes(Pacientes paciente) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoPacientes, true))) {
             writer.write(paciente.toString());
             writer.newLine();
         } catch (IOException e) {
-            System.out.println("Error al guardar el paciente nuevo: " + e.getMessage());
+            System.out.println("Ocurrió un error al guardar el paciente: " + e.getMessage());
         }
     }
 
-    //Con este metodo cargamos los pacientes desde el CSV
+    // Cargar pacientes desde archivo CSV
     private void cargarPacientes() {
         try (BufferedReader reader = new BufferedReader(new FileReader(archivoPacientes))) {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = linea.split(",");
                 if (datos.length == 2) {
-                    String id = datos[0];
-                    String nombre = datos[1];
-                    Pacientes paciente = new Pacientes(id, nombre);
+                    Pacientes paciente = new Pacientes(datos[0], datos[1]);
                     pacientes.add(paciente);
                 }
             }
@@ -90,46 +97,113 @@ public class SistemaDeGestion {
         }
     }
 
-    // Este metodo carga la informacion de los doctores desde el CSV
-    private void cargarDoctores() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(archivoDoctores))) {
+    // Agregar una nueva cita
+    public void agregarCita(LocalDateTime fechaHora, String motivo, String nombreDoctor, String nombrePaciente) {
+        // Buscar el doctor y paciente por nombre
+        String idDoctor = buscarIdPorNombreDoctor(nombreDoctor);
+        String idPaciente = buscarIdPorNombrePaciente(nombrePaciente);
+
+        if (idDoctor != null && idPaciente != null) {
+            String id = generarIdUnicoCitas();
+            Citas nuevaCita = new Citas(id, fechaHora, motivo, nombreDoctor, nombrePaciente);
+            citas.add(nuevaCita);
+            guardarCitas(nuevaCita);
+        } else {
+            if (idDoctor == null) {
+                System.out.println("Error: El doctor con nombre " + nombreDoctor + " no existe.");
+            }
+            if (idPaciente == null) {
+                System.out.println("Error: El paciente con nombre " + nombrePaciente + " no existe.");
+            }
+        }
+    }
+
+    // Buscar ID de doctor por nombre
+    private String buscarIdPorNombreDoctor(String nombreDoctor) {
+        for (Doctores doctor : doctores) {
+            if (doctor.obtenerNombre().equalsIgnoreCase(nombreDoctor)) {
+                return doctor.obtenerId();
+            }
+        }
+        return null;
+    }
+
+    // Buscar ID de paciente por nombre
+    private String buscarIdPorNombrePaciente(String nombrePaciente) {
+        for (Pacientes paciente : pacientes) {
+            if (paciente.obtenerNombre().equalsIgnoreCase(nombrePaciente)) {
+                return paciente.obtenerId();
+            }
+        }
+        return null;
+    }
+
+    // Generar un ID único para citas
+    private String generarIdUnicoCitas() {
+        return String.format("%04d", citas.size() + 1);
+    }
+
+    // Guardar cita en archivo CSV
+    private void guardarCitas(Citas cita) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoCitas, true))) {
+            writer.write(cita.toString());
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println("Ocurrió un error al guardar la cita: " + e.getMessage());
+        }
+    }
+
+    // Cargar citas desde archivo CSV
+    private void cargarCitas() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivoCitas))) {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = linea.split(",");
-                if (datos.length == 3) {  
-                    String id = datos[0];  
-                    String nombre = datos[1];
-                    String especialidad = datos[2];
-
-                    // Crear un nuevo doctor y agregarlo a la lista
-                    Doctores doctor = new Doctores(id, nombre, especialidad);
-                    doctores.add(doctor);
+                if (datos.length == 5) {
+                    Citas cita = new Citas(datos[0], LocalDateTime.parse(datos[1]), datos[2], datos[3], datos[4]);
+                    citas.add(cita);
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error al cargar doctores desde el archivo: " + e.getMessage());
+            System.out.println("Error al cargar citas: " + e.getMessage());
         }
     }
 
-    // Metodo para mostrar todos los doctores
-    public void mostrarDoctores() {
-        if (doctores.isEmpty()) {
-            System.out.println("No se encontraron doctores en base de datos.");
+    // Mostrar citas registradas
+    public void mostrarCitas() {
+        if (citas.isEmpty()) {
+            System.out.println("No hay citas registradas.");
         } else {
-            System.out.println("Doctores actualmente en base de datos:");
-            for (Doctores doctor : doctores) {
-                System.out.println(doctor.obtenerNombre() + ": " + doctor.obtenerEspecialidad());
+            System.out.println("Citas registradas:");
+            for (Citas cita : citas) {
+                System.out.println("Cita ID: " + cita.obtenerId() + ", Fecha: " + cita.obtenerFecha() +
+                        ", Motivo: " + cita.obtenerMotivoConsulta() + ", Doctor: " + cita.obtenerNombreDoctor() +
+                        ", Paciente: " + cita.obtenerNombrePaciente());
             }
         }
     }
-    //Metodo para mostrar todos los pacientes
+
+    // Mostrar doctores registrados
+    public void mostrarDoctores() {
+        if (doctores.isEmpty()) {
+            System.out.println("No hay doctores registrados.");
+        } else {
+            System.out.println("Doctores registrados:");
+            for (Doctores doctor : doctores) {
+                System.out.println("Doctor ID: " + doctor.obtenerId() + ", Nombre: " + doctor.obtenerNombre() +
+                        ", Especialidad: " + doctor.obtenerEspecialidad());
+            }
+        }
+    }
+
+    // Mostrar pacientes registrados
     public void mostrarPacientes() {
         if (pacientes.isEmpty()) {
-            System.out.println("No se encontraron pacientes.");
+            System.out.println("No hay pacientes registrados.");
         } else {
-            System.out.println("Pacientes en la base de datos:");
+            System.out.println("Pacientes registrados:");
             for (Pacientes paciente : pacientes) {
-                System.out.println(paciente.obtenerNombre());
+                System.out.println("Paciente ID: " + paciente.obtenerId() + ", Nombre: " + paciente.obtenerNombre());
             }
         }
     }
