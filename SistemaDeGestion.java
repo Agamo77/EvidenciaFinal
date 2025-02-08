@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SistemaDeGestion {
+<<<<<<< HEAD
     // Listas creadas para almacenar los doctores y pacientes
     private List<Doctores> doctores;
     private List<Pacientes> pacientes;
@@ -19,6 +20,16 @@ public class SistemaDeGestion {
         this.pacientes  = new ArrayList<>();
         cargarDoctores();
         cargarPacientes();
+=======
+    // Lista creada para almacenar los doctores
+    private List<Doctores> doctores;
+    // Asignamos un archivo CSV para guardar la lista de doctores
+    private final String archivoDoctores = "doctores.csv";
+
+    public SistemaDeGestion() {
+        this.doctores = new ArrayList<>();
+        cargarDoctores();
+>>>>>>> d942371859ecbaa85636aa0d57897108d2774a3e
     }
 
     // Creamos un método para agregar doctores a la lista
@@ -48,6 +59,7 @@ public class SistemaDeGestion {
         }
     }
 
+<<<<<<< HEAD
     //Este metodo agrega pacientes a la lista
     public void agregarPaciente(String nombre) {
         String id = generarIdUnicoPacientes();
@@ -90,6 +102,8 @@ public class SistemaDeGestion {
         }
     }
 
+=======
+>>>>>>> d942371859ecbaa85636aa0d57897108d2774a3e
     // Este metodo carga la informacion de los doctores desde el CSV
     private void cargarDoctores() {
         try (BufferedReader reader = new BufferedReader(new FileReader(archivoDoctores))) {
@@ -122,6 +136,7 @@ public class SistemaDeGestion {
             }
         }
     }
+<<<<<<< HEAD
     //Metodo para mostrar todos los pacientes
     public void mostrarPacientes() {
         if (pacientes.isEmpty()) {
@@ -133,4 +148,6 @@ public class SistemaDeGestion {
             }
         }
     }
+=======
+>>>>>>> d942371859ecbaa85636aa0d57897108d2774a3e
 }
