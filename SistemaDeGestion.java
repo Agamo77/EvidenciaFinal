@@ -6,17 +6,100 @@ public class SistemaDeGestion {
     private List<Doctores> doctores;
     private List<Pacientes> pacientes;
     private List<Citas> citas;
-    private final String archivoDoctores = "doctores.csv";
-    private final String archivoPacientes = "pacientes.csv";
-    private final String archivoCitas = "citas.csv";
+    private List<Usuario> usuarios;
+    private final String carpetaDb = "db";
+    private final String archivoDoctores = carpetaDb + "/doctores.csv";
+    private final String archivoPacientes = carpetaDb + "/pacientes.csv";
+    private final String archivoCitas = carpetaDb + "/citas.csv";
+    private final String archivoUsuarios = carpetaDb + "/usuarios.csv";
 
     public SistemaDeGestion() {
         this.doctores = new ArrayList<>();
         this.pacientes = new ArrayList<>();
         this.citas = new ArrayList<>();
+        this.usuarios = new ArrayList<>();
+        verificarYCrearArchivos();
         cargarDoctores();
         cargarPacientes();
         cargarCitas();
+        cargarUsuarios();
+    }
+
+    // Verificar si la carpeta "db" existe, si no, crearla
+    private void verificarYCrearArchivos() {
+        File carpeta = new File(carpetaDb);
+        if (!carpeta.exists()) {
+            carpeta.mkdir();  // Crear la carpeta db si no existe
+        }
+
+        // Crear archivos CSV vacíos si no existen
+        crearArchivoSiNoExiste(archivoDoctores);
+        crearArchivoSiNoExiste(archivoPacientes);
+        crearArchivoSiNoExiste(archivoCitas);
+        crearArchivoSiNoExiste(archivoUsuarios);  // Crear archivo de usuarios
+    }
+
+    // Verificar si un archivo existe, y si no, crearlo vacío
+    private void crearArchivoSiNoExiste(String archivo) {
+        File archivoFile = new File(archivo);
+        try {
+            if (!archivoFile.exists()) {
+                archivoFile.createNewFile();  // Crear archivo vacío si no existe
+            }
+        } catch (IOException e) {
+            System.out.println("Error al crear archivo: " + archivo);
+        }
+    }
+
+    //Cargar usuarios desde el CSV
+    private void cargarUsuarios() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivoUsuarios))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos.length == 2) {
+                    Usuario usuario = new Usuario(datos[0], datos[1]);
+                    usuarios.add(usuario);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cargar usuarios: " + e.getMessage());
+        }
+    }
+
+    //Metodo para guardar usuarios nuevos en el CSV
+    private void guardarUsuario(Usuario usuario) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoUsuarios, true))) {
+            writer.write(usuario.obtenerNombreUsuario() + "," + usuario.obtenerContrasena());
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println("Ocurrió un error al guardar el usuario: " + e.getMessage());
+        }
+    }
+
+    //Metodo para validar que las credenciales son correctas
+    public boolean verificarUsuario(String nombreUsuario, String contrasena) {
+        // Primero, verificar si el usuario es el administrador
+        if (nombreUsuario.equalsIgnoreCase("administrador") && contrasena.equals("administrador")) {
+            return true;
+        }
+
+        // Si no es el administrador, buscar en los usuarios guardados
+        for (Usuario usuario : usuarios) {
+            if (usuario.obtenerNombreUsuario().equalsIgnoreCase(nombreUsuario) &&
+                usuario.obtenerContrasena().equals(contrasena)) {
+                return true;
+            }
+        }
+
+        return false; 
+    }
+
+    //Metodo para agregar usuarios nuevos
+    public void agregarUsuario(String usuario, String contrasena) {
+        Usuario nuevoUsuario = new Usuario(usuario, contrasena);
+        usuarios.add(nuevoUsuario);
+        guardarUsuario(nuevoUsuario);
     }
 
     // Agregar un nuevo doctor
